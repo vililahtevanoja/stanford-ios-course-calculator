@@ -11,15 +11,22 @@ import UIKit
 class ViewController: UIViewController {
     
     @IBOutlet private weak var display: UILabel!
+    @IBOutlet private weak var operationSequenceDisplay: UILabel!
     
     private var userIsInTheMiddleOfTyping = false
     private var userTypingInteger = true
+    
+    @IBAction func clearCalculator(sender: UIButton) {
+        displayValue = 0
+        operationSequenceDisplayValue = " "
+        brain = CalculatorBrain()
+    }
     
     @IBAction private func touchDigit(sender: UIButton) {
         let digit = sender.currentTitle!
         let textCurrentlyInDisplay = display!.text!
         if userIsInTheMiddleOfTyping {
-            if digit == "." && userTypingInteger  {
+            if digit == "." && userTypingInteger {
                 userTypingInteger = false
                 display!.text = textCurrentlyInDisplay + digit
             }
@@ -37,7 +44,21 @@ class ViewController: UIViewController {
             return Double(display.text!)!
         }
         set {
-            display.text = String(newValue)
+                display.text = String(newValue)
+        }
+    }
+    
+    private var operationSequenceDisplayValue: String {
+        get {
+            if let text = operationSequenceDisplay.text {
+                return text
+            }
+            else {
+                return ""
+            }
+        }
+        set {
+            operationSequenceDisplay.text = newValue
         }
     }
     
@@ -51,7 +72,22 @@ class ViewController: UIViewController {
         }
         if let mathematicalSymbol = sender.currentTitle {
             brain.performOperation(mathematicalSymbol)
+            operationSequenceDisplayValue = brain.description
+            if brain.isPartialResult {
+                
+                operationSequenceDisplayValue = brain.description + " ..."
+            }
+            else {
+                operationSequenceDisplayValue = brain.description + " ="
+            }
         }
         displayValue = brain.result
+    }
+    
+    private func stripDisplayEnding(value: String) -> String {
+        let stripped = value
+            .stringByReplacingOccurrencesOfString(" ...", withString: "")
+            .stringByReplacingOccurrencesOfString(" =", withString: "")
+        return stripped
     }
 }

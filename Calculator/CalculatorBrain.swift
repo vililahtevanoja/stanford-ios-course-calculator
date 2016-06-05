@@ -11,9 +11,24 @@ import Foundation
 class CalculatorBrain {
     
     private var accumulator = 0.0
+    private var operationsSequence = ""
+    
+    var description: String {
+        get {
+            return operationsSequence
+        }
+    }
+    
+    var isPartialResult: Bool {
+        get {
+            return pending != nil
+        }
+    }
     
     func setOperand(operand: Double) {
         accumulator = operand
+        operationsSequence += "\(String(operand))"
+        print(operationsSequence)
     }
     
     var operations: Dictionary<String, Operation> = [
@@ -30,7 +45,7 @@ class CalculatorBrain {
         "÷": Operation.BinaryOperation({ $0 / $1 }),
         "+": Operation.BinaryOperation({ $0 + $1 }),
         "-": Operation.BinaryOperation({ $0 - $1 }),
-        "%": Operation.UnaryOperation ({ $0 * 0.1 }),
+        "%": Operation.UnaryOperation ({ $0 * 0.01 }),
         "=": Operation.Equals
     ]
     
@@ -50,6 +65,10 @@ class CalculatorBrain {
                 accumulator = function(accumulator)
             case .BinaryOperation(let function):
                 executePendingBinaryOperation()
+                if (symbol != "=") {
+                    operationsSequence += " \(symbol) "
+                }
+                print(operationsSequence)
                 pending = PendingBinaryOperationInfo(binaryFunction: function, firstOperand: accumulator)
             case .Equals:
                 executePendingBinaryOperation()
@@ -69,6 +88,11 @@ class CalculatorBrain {
     struct PendingBinaryOperationInfo {
         var binaryFunction: (Double, Double) -> Double
         var firstOperand: Double
+    }
+    
+    func reset() {
+        pending = nil
+        accumulator = 0
     }
     
     var result: Double {

@@ -12,6 +12,9 @@ class CalculatorBrain {
     
     private var accumulator = 0.0
     private var operationsSequence = ""
+    private var accumulatorValueIsFromUnaryOperation = false
+    private var isOperandConstant = false
+    private var operandConstantSymbol: String? = nil
     
     var description: String {
         get {
@@ -27,8 +30,18 @@ class CalculatorBrain {
     
     func setOperand(operand: Double) {
         accumulator = operand
-        operationsSequence += "\(String(operand))"
-        print(operationsSequence)
+        if (!isPartialResult) {
+            operationsSequence = ""
+        }
+        if (pending == nil) {
+            let isInteger = floor(operand) == operand
+            if (isInteger) {
+                operationsSequence += " \(Int(operand)) "
+            }
+            else {
+                operationsSequence += " \(operand) "
+            }
+        }
     }
     
     var operations: Dictionary<String, Operation> = [
@@ -36,11 +49,11 @@ class CalculatorBrain {
         "e" : Operation.Constant(M_E),
         "±" : Operation.UnaryOperation({ -$0 }),
         "√" : Operation.UnaryOperation(sqrt),
-        "pow" : Operation.BinaryOperation(pow),
         "sin": Operation.UnaryOperation(sin),
         "cos" : Operation.UnaryOperation(cos),
         "tan": Operation.UnaryOperation(tan),
         "log": Operation.UnaryOperation(log10),
+        "pow" : Operation.BinaryOperation(pow),
         "×": Operation.BinaryOperation({ $0 * $1 }),
         "÷": Operation.BinaryOperation({ $0 / $1 }),
         "+": Operation.BinaryOperation({ $0 + $1 }),
@@ -61,14 +74,23 @@ class CalculatorBrain {
             switch operation {
             case .Constant(let value):
                 accumulator = value
+                isOperandConstant = true
+                operandConstantSymbol = symbol
             case .UnaryOperation(let function):
+                if (pending == nil) {
+                operationsSequence = "\(symbol)(" + operationsSequence + ")"
+                }
+                else {
+                    operationsSequence += "\(symbol)(\(accumulator)) "
+                }
                 accumulator = function(accumulator)
+                accumulatorValueIsFromUnaryOperation = true
+                isOperandConstant = false
             case .BinaryOperation(let function):
                 executePendingBinaryOperation()
                 if (symbol != "=") {
                     operationsSequence += " \(symbol) "
                 }
-                print(operationsSequence)
                 pending = PendingBinaryOperationInfo(binaryFunction: function, firstOperand: accumulator)
             case .Equals:
                 executePendingBinaryOperation()
@@ -78,8 +100,20 @@ class CalculatorBrain {
     
     private func executePendingBinaryOperation() {
         if pending != nil {
+            if (!accumulatorValueIsFromUnaryOperation) {
+                if isOperandConstant {
+                    operationsSequence += " \(operandConstantSymbol!) "
+                    operandConstantSymbol = nil
+                }
+                else {
+                    operationsSequence += " \(accumulator) "
+                }
+            }
             accumulator = pending!.binaryFunction(pending!.firstOperand, accumulator)
+            accumulatorValueIsFromUnaryOperation = false
             pending = nil
+            isOperandConstant = false
+            operandConstantSymbol = nil
         }
     }
 

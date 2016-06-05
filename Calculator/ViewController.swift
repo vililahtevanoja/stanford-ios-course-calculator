@@ -18,6 +18,7 @@ class ViewController: UIViewController {
     
     @IBAction func clearCalculator(sender: UIButton) {
         displayValue = 0
+        display!.text = "0"
         operationSequenceDisplayValue = " "
         brain = CalculatorBrain()
     }
@@ -29,6 +30,9 @@ class ViewController: UIViewController {
             if digit == "." && userTypingInteger {
                 userTypingInteger = false
                 display!.text = textCurrentlyInDisplay + digit
+            }
+            if digit == "." && !userTypingInteger {
+                // do nothing
             }
             else {
                 display!.text = textCurrentlyInDisplay + digit
@@ -44,7 +48,12 @@ class ViewController: UIViewController {
             return Double(display.text!)!
         }
         set {
+            if floor(newValue) == newValue {
+                display.text = String(Int(newValue))
+            }
+            else {
                 display.text = String(newValue)
+            }
         }
     }
     
@@ -74,20 +83,13 @@ class ViewController: UIViewController {
             brain.performOperation(mathematicalSymbol)
             operationSequenceDisplayValue = brain.description
             if brain.isPartialResult {
-                
                 operationSequenceDisplayValue = brain.description + " ..."
+                displayValue = brain.result
             }
             else {
+                displayValue = brain.result
                 operationSequenceDisplayValue = brain.description + " ="
             }
         }
-        displayValue = brain.result
-    }
-    
-    private func stripDisplayEnding(value: String) -> String {
-        let stripped = value
-            .stringByReplacingOccurrencesOfString(" ...", withString: "")
-            .stringByReplacingOccurrencesOfString(" =", withString: "")
-        return stripped
     }
 }

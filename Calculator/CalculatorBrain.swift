@@ -15,6 +15,7 @@ class CalculatorBrain {
     private var accumulatorValueIsFromUnaryOperation = false
     private var isOperandConstant = false
     private var operandConstantSymbol: String? = nil
+    var variableValues: Dictionary<String, Double> = ["M" : 0]
     
     var description: String {
         get {
@@ -41,6 +42,16 @@ class CalculatorBrain {
             else {
                 operationsSequence += " \(operand) "
             }
+        }
+    }
+    
+    func setOperand(variableName: String) {
+        accumulator = variableValues[variableName]!
+        if (!isPartialResult) {
+            operationsSequence = ""
+        }
+        if (pending == nil) {
+            operationsSequence += " \(variableName) "
         }
     }
     

@@ -71,7 +71,40 @@ class ViewController: UIViewController {
         }
     }
     
+    var savedProgram: CalculatorBrain.PropertyList?
+    
+    @IBAction func save() {
+        savedProgram = brain.program
+    }
+    
+    @IBAction func restore() {
+        if savedProgram != nil {
+            brain.program = savedProgram!
+            displayValue = brain.result
+        }
+    }
+    
     private var brain = CalculatorBrain()
+    
+    @IBAction func setVariable(sender: UIButton) {
+        brain.variableValues[sender.currentTitle!] = displayValue
+    }
+    
+    
+    @IBAction func getVariable(sender: UIButton) {
+        let senderTitle = sender.currentTitle!
+        let letters = NSCharacterSet.letterCharacterSet()
+        let variable = String(
+            UnicodeScalar(
+                senderTitle
+                    .unicodeScalars
+                    .filter({ letters.longCharacterIsMember($0.value)})
+                    .first!
+            )
+        )
+        brain.setOperand(variable)
+    }
+    
     
     @IBAction private func performOperation(sender: UIButton) {
         if userIsInTheMiddleOfTyping {

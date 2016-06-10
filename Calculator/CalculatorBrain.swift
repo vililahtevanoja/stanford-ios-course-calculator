@@ -11,7 +11,7 @@ import Foundation
 class CalculatorBrain {
     
     private var accumulator = 0.0
-    //private var operationsSequence = ""
+    private var operationsSequence = ""
     private var accumulatorValueIsFromUnaryOperation = false
     private var isOperandConstant = false
     private var operandConstantSymbol: String? = nil
@@ -21,7 +21,7 @@ class CalculatorBrain {
     
     var description: String {
         get {
-            var descriptionStr = ""
+            /*var descriptionStr = ""
             for op in internalProgram {
                 if let operand = op as? Double {
                     let isInteger = floor(operand) == operand
@@ -38,7 +38,8 @@ class CalculatorBrain {
                     }
                 }
             }
-            return descriptionStr
+            return descriptionStr*/
+            return operationsSequence
         }
     }
     
@@ -52,15 +53,15 @@ class CalculatorBrain {
         accumulator = operand
         internalProgram.append(operand)
         if (!isPartialResult) {
-            //operationsSequence = ""
+            operationsSequence = ""
         }
         if (pending == nil) {
             let isInteger = floor(operand) == operand
             if (isInteger) {
-                //operationsSequence += " \(Int(operand)) "
+                operationsSequence += " \(Int(operand)) "
             }
             else {
-                //operationsSequence += " \(operand) "
+                operationsSequence += " \(operand) "
             }
         }
     }
@@ -68,10 +69,10 @@ class CalculatorBrain {
     func setOperand(variableName: String) {
         accumulator = variableValues[variableName]!
         if (!isPartialResult) {
-            //operationsSequence = ""
+            operationsSequence = ""
         }
         if (pending == nil) {
-            //operationsSequence += " \(variableName) "
+            operationsSequence += " \(variableName) "
         }
     }
     
@@ -110,10 +111,10 @@ class CalculatorBrain {
                 operandConstantSymbol = symbol
             case .UnaryOperation(let function):
                 if (pending == nil) {
-                //operationsSequence = "\(symbol)(" + operationsSequence + ")"
+                    operationsSequence = "\(symbol)(" + operationsSequence + ")"
                 }
                 else {
-                    //operationsSequence += "\(symbol)(\(accumulator)) "
+                    operationsSequence += "\(symbol)(\(accumulator)) "
                 }
                 accumulator = function(accumulator)
                 accumulatorValueIsFromUnaryOperation = true
@@ -121,7 +122,7 @@ class CalculatorBrain {
             case .BinaryOperation(let function):
                 executePendingBinaryOperation()
                 if (symbol != "=") {
-                    //operationsSequence += " \(symbol) "
+                    operationsSequence += " \(symbol) "
                 }
                 pending = PendingBinaryOperationInfo(binaryFunction: function, firstOperand: accumulator)
             case .Equals:
@@ -134,11 +135,11 @@ class CalculatorBrain {
         if pending != nil {
             if (!accumulatorValueIsFromUnaryOperation) {
                 if isOperandConstant {
-                    //operationsSequence += " \(operandConstantSymbol!) "
+                    operationsSequence += " \(operandConstantSymbol!) "
                     operandConstantSymbol = nil
                 }
                 else {
-                    //operationsSequence += " \(accumulator) "
+                    operationsSequence += " \(accumulator) "
                 }
             }
             accumulator = pending!.binaryFunction(pending!.firstOperand, accumulator)
@@ -160,7 +161,12 @@ class CalculatorBrain {
         pending = nil
         accumulator = 0
         internalProgram.removeAll()
+        for (key, _) in variableValues {
+            variableValues[key] = 0.0
+        }
     }
+    
+    
     
     typealias PropertyList = AnyObject
     var program: PropertyList {
